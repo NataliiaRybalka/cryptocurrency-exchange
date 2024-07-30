@@ -19,17 +19,32 @@ interface GetRatesResult {
 };
 
 export const estimate = async (req: Request, res: Response) => {
-	const { inputAmount, inputCurrency, outputCurrency } = req.query;
+	const { inputCurrency, outputCurrency } = req.query;
+	const inputAmount = Number(req.query);
 	if (!inputAmount || !inputCurrency || !outputCurrency) throw new Error('Please provide all data.');
 
 	try {
 		const binancePrice = await getRatesBinance(inputCurrency.toString(), outputCurrency.toString());
 		const kucoinPrice = await getRatesKuCoin(inputCurrency.toString(), outputCurrency.toString());
 
-		const result: EstimateResult = {
-			exchangeName: Exchanges.Binance,
-			outputAmount: 0
-		};
+		if (typeof(binancePrice) === 'string') return res.status(404).json(binancePrice);
+		if (typeof(kucoinPrice) === 'string') return res.status(404).json(kucoinPrice);
+
+		const binanceAmount = inputAmount * Number(binancePrice);
+		const kucoinAmount = inputAmount * Number(kucoinPrice);
+
+		let result;
+		if (binanceAmount > kucoinAmount) {
+			result = {
+				exchangeName: Exchanges.Binance,
+				outputAmount: binanceAmount
+			};
+		} else if (binanceAmount < kucoinAmount) {
+			result = {
+				exchangeName: Exchanges.KuCoin,
+				outputAmount: kucoinAmount
+			};
+		}
 
 		return res.status(200).json(result);
 	} catch (e){
