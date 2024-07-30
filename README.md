@@ -1,10 +1,12 @@
 # cryptocurrency-exchange
-Сryptocurrency Уxchange
+Сryptocurrency Exchange
 
 Start the server
 ```
 npm run dev
 ```
+
+# Task:
 
 Розробити API сервіс який буде мати два ендпоінти.
 
