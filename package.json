@@ -4,9 +4,11 @@
 	"description": "Electronic Diary Server",
 	"main": "index.ts",
 	"scripts": {
-		"start": "NODE_PATH=./build node build/index.js",
+		"start": "npm run swagger-autogen-js && NODE_PATH=./build node build/index.js",
 		"build": "tsc -p .",
 		"dev": "nodemon src/index.ts",
+		"swagger-autogen-js": "NODE_PATH=./build node build/swagger.js",
+		"swagger-autogen-ts": "node ./src/swagger.ts",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Nataliia Rybalka <natalirybalka21@gmail.com>",
@@ -15,11 +17,14 @@
 		"body-parser": "^1.20.2",
 		"cors": "^2.8.5",
 		"dotenv": "^16.3.1",
-		"express": "^4.18.2"
+		"express": "^4.18.2",
+		"swagger-autogen": "^2.23.7",
+		"swagger-ui-express": "^5.0.1"
 	},
 	"devDependencies": {
 		"@types/cors": "^2.8.13",
 		"@types/express": "^4.17.17",
+		"@types/swagger-ui-express": "^4.1.6",
 		"nodemon": "^3.0.1",
 		"npm": "^9.8.1",
 		"ts-node": "^10.9.1",

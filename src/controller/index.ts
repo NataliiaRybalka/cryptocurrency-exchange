@@ -9,7 +9,10 @@ enum Exchanges {
 
 export const estimate = async (req: Request, res: Response) => {
 	// get params
-	const { inputAmount, inputCurrency, outputCurrency } = req.query;
+	const inputAmount = Number(req.query.inputAmount);
+	const inputCurrency = String(req.query.inputCurrency).toUpperCase();
+	const outputCurrency = String(req.query.outputCurrency).toUpperCase();
+
 	if (!inputAmount || !inputCurrency || !outputCurrency) return res.status(400).json('Please provide all data.');
 
 	try {
@@ -30,13 +33,13 @@ export const estimate = async (req: Request, res: Response) => {
 		// price comparison
 		if (binancePrice > kucoinPrice) {
 			result.exchangeName = Exchanges.Binance;
-			result.outputAmount = Number(inputAmount) * Number(binancePrice);
+			result.outputAmount = inputAmount * Number(binancePrice);
 		} else if (binancePrice < kucoinPrice) {
 			result.exchangeName = Exchanges.KuCoin;
-			result.outputAmount = Number(inputAmount) * Number(kucoinPrice);
+			result.outputAmount = inputAmount * Number(kucoinPrice);
 		} else {
 			result.exchangeName = `The value of the currency ${inputCurrency} in ${outputCurrency} is the same on the exchanges Binance and KuCoin.`;
-			result.outputAmount = Number(inputAmount) * Number(binancePrice);
+			result.outputAmount = inputAmount * Number(binancePrice);
 		}
 
 		return res.status(200).json(result);
@@ -47,7 +50,9 @@ export const estimate = async (req: Request, res: Response) => {
 
 export const getRates = async (req: Request, res: Response) => {
 	// get params
-	const { baseCurrency, quoteCurrency } = req.query;
+	const baseCurrency = String(req.query.baseCurrency).toUpperCase();
+	const quoteCurrency = String(req.query.quoteCurrency).toUpperCase();
+	
 	if (!baseCurrency || !quoteCurrency) return res.status(400).json('Please provide all data.');
 
 	try {

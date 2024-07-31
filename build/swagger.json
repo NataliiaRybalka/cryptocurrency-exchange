@@ -1,0 +1,175 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Air MD",
+    "description": ""
+  },
+  "host": "localhost:4000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Estimate",
+      "description": "API for Estimate"
+    },
+    {
+      "name": "GetRates",
+      "description": "API for GetRates"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/estimate": {
+      "get": {
+        "tags": [
+          "Estimate"
+        ],
+        "description": "Get estimation",
+        "parameters": [
+          {
+            "name": "inputAmount",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "inputCurrency",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "outputCurrency",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Estimate"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/get-rates": {
+      "get": {
+        "tags": [
+          "GetRates"
+        ],
+        "description": "Get rates",
+        "parameters": [
+          {
+            "name": "baseCurrency",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "quoteCurrency",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetRates"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Estimate": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "exchangeName": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            },
+            "outputAmount": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Rate": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "exchangeName": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            },
+            "rate": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "GetRates": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/Rate"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
