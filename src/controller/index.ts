@@ -1,49 +1,42 @@
 import { Request, Response } from 'express';
-import axios from 'axios';
 
-import { getRatesBinance, getRatesKuCoin } from '../lib/requests';
+import { getRatesBinance, getRatesKuCoin } from '../lib/api';
 
 enum Exchanges {
 	Binance = 'Binance',
 	KuCoin = 'KuCoin',
 };
 
-interface EstimateResult {
-	exchangeName: Exchanges;
-	outputAmount: Number;
-};
-
-interface GetRatesResult {
-	exchangeName: Exchanges;
-	rate: Number;
-};
-
 export const estimate = async (req: Request, res: Response) => {
-	const { inputCurrency, outputCurrency } = req.query;
-	const inputAmount = Number(req.query);
-	if (!inputAmount || !inputCurrency || !outputCurrency) throw new Error('Please provide all data.');
+	// get params
+	const { inputAmount, inputCurrency, outputCurrency } = req.query;
+	if (!inputAmount || !inputCurrency || !outputCurrency) return res.status(400).json('Please provide all data.');
 
 	try {
-		const binancePrice = await getRatesBinance(inputCurrency.toString(), outputCurrency.toString());
-		const kucoinPrice = await getRatesKuCoin(inputCurrency.toString(), outputCurrency.toString());
+		// get prices from Binance and KuCoin
+		const [binancePrice, kucoinPrice] = await Promise.all([
+			getRatesBinance(inputCurrency.toString(), outputCurrency.toString()),
+			getRatesKuCoin(inputCurrency.toString(), outputCurrency.toString())
+		]);
 
-		if (typeof(binancePrice) === 'string') return res.status(404).json(binancePrice);
-		if (typeof(kucoinPrice) === 'string') return res.status(404).json(kucoinPrice);
+		if (typeof(binancePrice) !== 'number') return res.status(404).json(binancePrice);
+		if (typeof(kucoinPrice) !== 'number') return res.status(404).json(kucoinPrice);
 
-		const binanceAmount = inputAmount * Number(binancePrice);
-		const kucoinAmount = inputAmount * Number(kucoinPrice);
+		const result = {
+			exchangeName: '',
+			outputAmount: 0,
+		};
 
-		let result;
-		if (binanceAmount > kucoinAmount) {
-			result = {
-				exchangeName: Exchanges.Binance,
-				outputAmount: binanceAmount
-			};
-		} else if (binanceAmount < kucoinAmount) {
-			result = {
-				exchangeName: Exchanges.KuCoin,
-				outputAmount: kucoinAmount
-			};
+		// price comparison
+		if (binancePrice > kucoinPrice) {
+			result.exchangeName = Exchanges.Binance;
+			result.outputAmount = Number(inputAmount) * Number(binancePrice);
+		} else if (binancePrice < kucoinPrice) {
+			result.exchangeName = Exchanges.KuCoin;
+			result.outputAmount = Number(inputAmount) * Number(kucoinPrice);
+		} else {
+			result.exchangeName = `The value of the currency ${inputCurrency} in ${outputCurrency} is the same on the exchanges Binance and KuCoin.`;
+			result.outputAmount = Number(inputAmount) * Number(binancePrice);
 		}
 
 		return res.status(200).json(result);
@@ -53,24 +46,28 @@ export const estimate = async (req: Request, res: Response) => {
 };
 
 export const getRates = async (req: Request, res: Response) => {
+	// get params
 	const { baseCurrency, quoteCurrency } = req.query;
-	if (!baseCurrency || !quoteCurrency) throw new Error('Please provide all data.');
+	if (!baseCurrency || !quoteCurrency) return res.status(400).json('Please provide all data.');
 
 	try {
-        const binancePrice = await getRatesBinance(baseCurrency.toString(), quoteCurrency.toString());
-		const kucoinPrice = await getRatesKuCoin(baseCurrency.toString(), quoteCurrency.toString());
+		// get prices from Binance and KuCoin
+		const [binancePrice, kucoinPrice] = await Promise.all([
+			getRatesBinance(baseCurrency.toString(), quoteCurrency.toString()),
+			getRatesKuCoin(baseCurrency.toString(), quoteCurrency.toString())
+		]);
+	
+		if (typeof(binancePrice) !== 'number') return binancePrice;
+		if (typeof(kucoinPrice) !== 'number') return kucoinPrice;
 
-		if (typeof(binancePrice) === 'string') return res.status(404).json(binancePrice);
-		if (typeof(kucoinPrice) === 'string') return res.status(404).json(kucoinPrice);
-
-		const result: Array<GetRatesResult> = [
+		const result = [
 			{
 				exchangeName: Exchanges.Binance,
-				rate: Number(binancePrice)
+				rate: binancePrice
 			},
 			{
 				exchangeName: Exchanges.KuCoin,
-				rate: Number(kucoinPrice)
+				rate: kucoinPrice
 			}
 		];
 		return res.status(200).json(result);
