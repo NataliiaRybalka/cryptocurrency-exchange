@@ -3,7 +3,8 @@
 
 Start the server
 ```
-npm run dev
+npm install
+npm run start
 ```
 
 # Task:
